@@ -1,73 +1,113 @@
-# Welcome to your Lovable project
+# url-short
 
-## Project info
+A clean, fast URL shortener web app. Paste a long URL, get a short link in seconds — with a copy button, share actions, and a session history of every link you shortened.
 
-**URL**: https://lovable.dev/projects/c7098ca0-6b8e-433a-a49b-deb3e325fd32
+Built by Girish Lade — https://ladestack.in
 
-## How can I edit this code?
+## What it does
 
-There are several ways of editing your application.
+- **Shorten URLs** — paste any `http(s)://` link and shorten it via the [TinyURL API](https://tinyurl.com/api).
+- **One-click copy** — copy the shortened link to your clipboard instantly.
+- **Open in new tab** — verify the short link works right from the app.
+- **Session history** — every shortened link is kept in a list with its original URL and timestamp.
+- **Validation** — malformed URLs are rejected with a toast warning before any API call.
+- **Dark / light mode** — theme toggle with `next-themes`.
+- **Responsive** — works on mobile, tablet, and desktop.
 
-**Use Lovable**
+## Tech stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/c7098ca0-6b8e-433a-a49b-deb3e325fd32) and start prompting.
+- [Vite](https://vitejs.dev/) 5 + [React](https://react.dev/) 18 + [TypeScript](https://www.typescriptlang.org/)
+- [shadcn/ui](https://ui.shadcn.com/) (Radix UI primitives) + [Tailwind CSS](https://tailwindcss.com/) 3
+- [TinyURL API](https://tinyurl.com/api) for the actual shortening (`api.tinyurl.com/create`)
+- [lucide-react](https://lucide.dev/) icons, shadcn toast for notifications
+- ESLint 9, PostCSS, SWC compiler (`@vitejs/plugin-react-swc`)
 
-Changes made via Lovable will be committed automatically to this repo.
+## Quick start
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Requires Node.js 18+ and npm.
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# 1. Clone
+git clone https://github.com/girishlade111/url-short.git
+cd url-short
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# 2. Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 3. Run the dev server
 npm run dev
+# → http://localhost:8080
 ```
 
-**Edit a file directly in GitHub**
+Production build:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```sh
+npm run build     # outputs to dist/
+npm run preview   # preview the production build locally
+```
 
-**Use GitHub Codespaces**
+Lint:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```sh
+npm run lint
+```
 
-## What technologies are used for this project?
+## Configuration
 
-This project is built with:
+The TinyURL API key is currently hardcoded in `src/components/URLShortener.tsx`:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+```ts
+const TINYURL_API_KEY = "your-key-here";
+```
 
-## How can I deploy this project?
+For local use, replace it with your own key from [tinyurl.com/api](https://tinyurl.com/api). For a real deployment, move it into a serverless function or proxy — never ship a private API key to the browser in production.
 
-Simply open [Lovable](https://lovable.dev/projects/c7098ca0-6b8e-433a-a49b-deb3e325fd32) and click on Share -> Publish.
+## Project structure
 
-## Can I connect a custom domain to my Lovable project?
+```
+url-short/
+├── index.html                 # Entry HTML
+├── vite.config.ts             # Vite config (@ alias, SWC plugin)
+├── tailwind.config.ts         # Tailwind theme
+├── components.json            # shadcn/ui config
+├── src/
+│   ├── main.tsx               # React entry
+│   ├── App.tsx                # App shell + theme provider
+│   ├── App.css
+│   ├── index.css              # Tailwind + custom styles
+│   ├── components/
+│   │   ├── URLShortener.tsx   # Core: form, TinyURL API call, history list
+│   │   ├── ThemeToggle.tsx    # Dark/light toggle
+│   │   └── ui/                # shadcn/ui components (button, card, input, toast…)
+│   ├── hooks/                 # use-toast, use-mobile
+│   └── lib/                   # utils
+└── public/                    # favicon, robots.txt, placeholder.svg
+```
 
-Yes, you can!
+## How it works
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+1. User pastes a URL → validated with the `URL` constructor (must include `http://` or `https://`).
+2. `POST https://api.tinyurl.com/create` with the key as a Bearer token, requesting a `tinyurl.com` domain link.
+3. Response's `tiny_url` is prepended to the in-memory history with a timestamp; the input is cleared.
+4. Copy/open buttons are per-item. History is in-memory only — it resets on page reload.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## Deployment notes
+
+- **Static only** — no backend; the production `dist/` folder can be served from any static host.
+- GitHub Pages deploy: `npm run build` with `--base=/url-short/` so assets resolve under the repo subpath.
+- When deploying to a custom root domain or Vercel, build with the default `/` base.
+
+## Live demo
+
+https://girishlade111.github.io/url-short/
+
+## Roadmap ideas
+
+- Persist history to `localStorage`
+- Custom aliases (`tinyurl.com/my-brand`)
+- QR code generation per link
+- Click-analytics dashboard
+
+---
+
+Built by Girish Lade — https://ladestack.in
